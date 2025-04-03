@@ -12,7 +12,7 @@
 ### number of cpus per task
 #SBATCH --cpus-per-task=94
 ### the name of the job
-#SBATCH --job-name=NV_Receiver_Simulations
+#SBATCH --job-name=Receiver_Simulations
 ### memory per CPU
 #SBATCH --mem-per-cpu=5gb
 ### total memory requested = memory per cpu x cpus per task. Better not to use if you have ntasks and cpus per task set

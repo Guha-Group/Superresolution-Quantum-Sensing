@@ -48,7 +48,6 @@ function [xsk_est,PDF] = SimulateBayesianReceiver(xsk_0,sigma,M,N,dm,adaptive)
     
     %% STAGE 1: CALIBRATION
     % Simulate a direct imaging measurement (equal brightness)
-
     if ~adaptive %% NON-ADAPTIVE (TYPE-I ESTIMATION)
         
         % setup switching criteria

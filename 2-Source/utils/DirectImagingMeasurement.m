@@ -1,5 +1,3 @@
-
-%% FUNCTIONS %%
 function x = SimulateDirectImaging(x0,s,kappa,n,sigma)
     % point source parameters
     x1 = x0-s; b1 = .5-kappa;
