@@ -1,4 +1,4 @@
-function BayesianReceiver_MonteCarlo(array_id_str)
+function BayesianReceiver_MonteCarlo(array_id_str,num_workers,save_dir)
 %% COLOR-CENTER SUPERRESOLUTION SENSING MONTE CARLO SIMULATIONS
 % Description: 
 % Runs a Monte-Carlo analysis for estimating the brightness of
@@ -9,6 +9,10 @@ function BayesianReceiver_MonteCarlo(array_id_str)
 if ischar(array_id_str)
     array_id = str2double(array_id_str);
 end
+
+% make a save directory
+directory_name = ['data\',save_dir,'\'];
+mkdir(directory_name)
 
 % add the utility functions
 addpath('utils\')
@@ -32,7 +36,7 @@ XSK_EST_SB = XSK_0;
 XSK_EST_AB = XSK_0; 
 PHOTONS_AB = zeros(2,numel(s_range),numel(k_range),T);
 
-parpool(94)
+parpool(num_workers)
 
 % run Monte-Carlo Survey
 %for ns = 1:numel(s_range)
@@ -68,7 +72,7 @@ parpool(94)
         end
         
         % save 
-        save(['Data/MonteCarlo_2Source_ReceiverSurvey',array_id_str,'.mat'],'-regexp', '^(?!ans$).')
+        save(fullfile(directory_name,['MonteCarlo_2Source_ReceiverSurvey',array_id_str,'.mat']),'-regexp', '^(?!ans$).')
     end
 %end
 end
