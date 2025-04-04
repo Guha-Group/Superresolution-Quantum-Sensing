@@ -1,4 +1,4 @@
-function BayesianReceiver_MonteCarlo(array_id_str,num_workers,save_dir)
+function BayesianReceiver_MonteCarlo(array_id,num_workers,save_dir)
 %% COLOR-CENTER SUPERRESOLUTION SENSING MONTE CARLO SIMULATIONS
 % Description: 
 % Runs a Monte-Carlo analysis for estimating the brightness of
@@ -6,8 +6,8 @@ function BayesianReceiver_MonteCarlo(array_id_str,num_workers,save_dir)
 % pair-wise separations of the two sources with several repeated trials.
 
 % convert the array id input into a numeric index
-if ischar(array_id_str)
-    array_id = str2double(array_id_str);
+if ischar(array_id)
+    array_id = str2double(array_id);
 end
 
 % make a save directory
@@ -21,8 +21,7 @@ addpath('utils\')
 sigma = 1;
 x0 = 0;
 s_range = sigma*(.05:.0125:.5);
-%k_range = 0:.1:.4;
-k_range = 0;
+k_range = 0:.1:.4;
 T = 1; % Trials per monte-carlo sample
 M = 5e4;
 N = 5e4;
@@ -40,10 +39,15 @@ parpool(num_workers)
 
 % run Monte-Carlo Survey
 %for ns = 1:numel(s_range)
+    ns = array_id;
     s = s_range(array_id);
     for nk = 1:numel(k_range)
         k = k_range(nk);
         parfor t = 1:T
+
+            % display current iter
+            disp([ns,nk,t])
+
             % random number generation seed should be unique for each
             % worker in parfor loop
             rng(ns+nk+t);
@@ -62,17 +66,14 @@ parpool(num_workers)
             
             % store results
             XSK_EST_DI(:,array_id,nk,t) = xsk_DI;
-            XSK_EST_SB(:,array_id,nk,t) = xsk_SB;
-            XSK_EST_AB(:,array_id,nk,t) = xsk_AB;
-            PHOTONS_AB(:,array_id,nk,t) = PDF_AB.photons(1:2);
+            XSK_EST_SB(:,ns,nk,t) = xsk_SB;
+            XSK_EST_AB(:,ns,nk,t) = xsk_AB;
+            PHOTONS_AB(:,ns,nk,t) = PDF_AB.photons(1:2);
 
-            % display current iter
-            disp([ns,nk,t])
-            toc
         end
         
         % save 
-        save(fullfile(directory_name,['MonteCarlo_2Source_ReceiverSurvey',array_id_str,'.mat']),'-regexp', '^(?!ans$).')
+        save(fullfile(directory_name,['MonteCarlo_2Source_ReceiverSurvey',num2str(array_id),'.mat']),'-regexp', '^(?!ans$).')
     end
 %end
 end
