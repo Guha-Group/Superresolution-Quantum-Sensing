@@ -5,17 +5,20 @@ function BayesianReceiver_MonteCarlo(array_id,num_workers,save_dir)
 % two sub-diffraction color centers. The analysis steps through different
 % pair-wise separations of the two sources with several repeated trials.
 
-% convert the array id input into a numeric index
+% convert string inputs into numerics
 if ischar(array_id)
     array_id = str2double(array_id);
 end
+if ischar(num_workers)
+    num_workers = str2double(num_workers);
+end
 
 % make a save directory
-directory_name = ['data\',save_dir,'\'];
+directory_name = ['data/',save_dir,'/'];
 mkdir(directory_name)
 
 % add the utility functions
-addpath('utils\')
+addpath('utils/')
 
 % setup the monte-carlo survey ranges
 sigma = 1;
