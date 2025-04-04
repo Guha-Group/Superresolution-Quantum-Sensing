@@ -1,36 +1,45 @@
+function BayesianReceiver_MonteCarlo(array_id_str)
 %% COLOR-CENTER SUPERRESOLUTION SENSING MONTE CARLO SIMULATIONS
 % Description: 
 % Runs a Monte-Carlo analysis for estimating the brightness of
 % two sub-diffraction color centers. The analysis steps through different
 % pair-wise separations of the two sources with several repeated trials.
+
+% convert the array id input into a numeric index
+if ischar(array_id_str)
+    array_id = str2double(array_id_str);
+end
+
+% add the utility functions
 addpath('utils\')
+
+% setup the monte-carlo survey ranges
 sigma = 1;
-splitting_fraction = 0.5;
 x0 = 0;
 s_range = sigma*(.05:.0125:.5);
-k_range = 0:.1:.4;
-M = 1e4;
-N = 5e4;
-dm = 1e3;
+%k_range = 0:.1:.4;
+k_range = 0;
 T = 1; % Trials per monte-carlo sample
+M = 5e4;
+N = 5e4;
+photons_per_adaptation = 1e3;
+splitting_ratio = .5; 
 
-% containers for holding MC results
+% containers for holding results
 XSK_0 = zeros(3,numel(s_range),numel(k_range),T);
-XSK_EST_I = XSK_0;
-XSK_EST_II = XSK_0;
-XSK_EST_DI = XSK_0;
-M_I = zeros(2,numel(s_range),numel(k_range),T);
-M_II = M_I;
+XSK_EST_DI = XSK_0; 
+XSK_EST_SB = XSK_0; 
+XSK_EST_AB = XSK_0; 
+PHOTONS_AB = zeros(2,numel(s_range),numel(k_range),T);
 
 parpool(94)
 
 % run Monte-Carlo Survey
-for ns = 1:numel(s_range)
-    s = s_range(ns);
+%for ns = 1:numel(s_range)
+    s = s_range(array_id);
     for nk = 1:numel(k_range)
         k = k_range(nk);
         parfor t = 1:T
-            
             % random number generation seed should be unique for each
             % worker in parfor loop
             rng(ns+nk+t);
@@ -39,40 +48,29 @@ for ns = 1:numel(s_range)
             [xsk_0] = [x0,s,k];
 
             %% Direct Imaging
-            M=1e4;
             [xsk_DI,~] = SimulateReceiver(xsk_0,N,'DirectImaging',M);
             
             %% Static BSPADE
-            M=1e4; splitting_ratio = 0.5;
             [xsk_SB,~] = SimulateReceiver(xsk_0,N,'StaticBSPADE',M,splitting_ratio);
             
             %% Adaptive BSPADE
-            M=1e4; dm=1e3;
-            [xsk_AB,~] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,dm);
+            [xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
             
-            %% Threshold BSPADE
-            dm=1e3; target_std_s=1e-2;
-            [xsk_TB,~] = SimulateReceiver(xsk_0,N,'ThresholdBSPADE',dm,target_std_s);
-
-            
-           
-            % store the results
-            XSK_0(:,ns,nk,t) = xsk_0;
-            XSK_EST_I(:,ns,nk,t) = xsk_est_I;
-            %XSK_EST_II(:,ns,nk,t) = xsk_est_II;
-            XSK_EST_DI(:,ns,nk,t) = xsk_est_DI;
-
-            M_I(:,ns,nk,t) = PDF_I.photons(1:2);
-            %M_II(:,ns,nk,t) = PDF_II.photons(1:2);
+            % store results
+            XSK_EST_DI(:,array_id,nk,t) = xsk_DI;
+            XSK_EST_SB(:,array_id,nk,t) = xsk_SB;
+            XSK_EST_AB(:,array_id,nk,t) = xsk_AB;
+            PHOTONS_AB(:,array_id,nk,t) = PDF_AB.photons(1:2);
 
             % display current iter
             disp([ns,nk,t])
-           
+            toc
         end
         
         % save 
-        save('Data/MonteCarlo_ReceiverSurvey_TypeI_DI.mat','-regexp', '^(?!ans$).')
+        save(['Data/MonteCarlo_2Source_ReceiverSurvey',array_id_str,'.mat'],'-regexp', '^(?!ans$).')
     end
+%end
 end
 
 
