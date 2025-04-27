@@ -1,4 +1,4 @@
-function [xsk_est, PDF] =Simulate_AdaptiveBSPADE_Receiver(xsk_0,N,M,sigma,dm)
+function [xsk_est, outdata] =Simulate_AdaptiveBSPADE_Receiver(xsk_0,N,M,sigma,dm)
 % Description: Simulates measurements for a Bayesian receiver that
 % estimates the centroid, separation, and brightness of two radiating 
 % sub-diffraction point sources. The algorithm runs as follows:
@@ -32,7 +32,7 @@ function [xsk_est, PDF] =Simulate_AdaptiveBSPADE_Receiver(xsk_0,N,M,sigma,dm)
 %               Calibration stage
 %%%%%%%%%%% OUTPUTS %%%%%%%%%%%%
 %   xsk_est :   [1,3] vector of parameter estimates [x0_mle,s0_mmmse,k0_mmse]
-%   PDF     :   A structure with all priors and marginalized posterior
+%   outdata :   A structure with all priors and marginalized posterior
 %               distributions of the estimators and their domains.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % author(s):    Nico Deshler, ndeshler@arizona.edu
@@ -140,19 +140,25 @@ s_mmse = sum(P_s.*s,3)*ds;
 % Get MMSE estimator for brightness
 k_mmse = sum(P_k.*k,4)*dk;
 
+% get conditional Max likelihood estimator for brightness
+k_mle = mean(xx)/(2*s_mmse);
+k_mle = min(max(-.5,k_mle),.5);
+
 % collect outputs estimates
 xsk_est = [x0_est,s_mmse,k_mmse];
 
 % and distributions
-PDF.xsk_0 = xsk_0;         % ground truth params
-PDF.xsk_est = xsk_est;     % estimated params
-PDF.k0 = k0;         % ground truth k
-PDF.x = e+x0_est;    % domain of x0 estimator
-PDF.s = s;           % domain of s estimator
-PDF.k = k;           % domian of k estimator
-PDF.p_s = p_s;       % prior on s estimator
-PDF.P_x0 = p_e;      % posterior distribution on x0 estimator
-PDF.P_s = P_s;       % marginal posterior distribution on s estimator
-PDF.P_k = P_k;       % marginal posterior distribution on k estimator
-PDF.photons = [M1,M2,N]; % photons allocated to each stage
+outdata.xsk_0 = xsk_0;         % ground truth params
+outdata.xsk_est = xsk_est;     % estimated params
+outdata.x = e+x0_est;    % domain of x0 estimator
+outdata.s = s;           % domain of s estimator
+outdata.k = k;           % domian of k estimator
+outdata.p_s = p_s;       % prior on s estimator
+outdata.P_x0 = p_e;      % posterior distribution on x0 estimator
+outdata.P_s = P_s;       % marginal posterior distribution on s estimator
+outdata.P_k = P_k;       % marginal posterior distribution on k estimator
+outdata.photons = [M1,M2,N]; % photons allocated to each stage
+outdata.dm = dm;
+outdata.iter = iter;
+outdata.expected_var_s = expected_var_s;
 end

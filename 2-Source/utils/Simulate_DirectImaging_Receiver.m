@@ -1,4 +1,4 @@
-function [xsk_est,PDF] = Simulate_DirectImaging_Receiver(xsk_0,N,M,sigma)
+function [xsk_est,outdata] = Simulate_DirectImaging_Receiver(xsk_0,N,M,sigma)
 % Description: Simulates a two-stage receiver consisting only of direct
 % imaging measurements.
 
@@ -24,7 +24,7 @@ function [xsk_est,PDF] = Simulate_DirectImaging_Receiver(xsk_0,N,M,sigma)
 
 % just return a static BSPADE receiver with all photons allocated to the
 % direct imaging stage
-alpha = 1;
-[xsk_est, PDF] = Simulate_StaticBSPADE_Receiver(xsk_0,N,M,sigma,alpha);
+splitting_ratio = 1;
+[xsk_est, outdata] = Simulate_StaticBSPADE_Receiver(xsk_0,N,M,sigma,splitting_ratio);
 
 end

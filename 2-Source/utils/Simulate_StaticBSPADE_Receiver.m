@@ -1,4 +1,4 @@
-function [xsk_est, PDF] = Simulate_StaticBSPADE_Receiver(xsk_0,N,M,sigma,splitting_ratio)
+function [xsk_est, outdata] = Simulate_StaticBSPADE_Receiver(xsk_0,N,M,sigma,splitting_ratio)
 % Description: Simulates measurements for a Bayesian receiver that
 % estimates the centroid, separation, and brightness of two radiating 
 % sub-diffraction point sources. The receiver is static in that the user
@@ -36,7 +36,7 @@ function [xsk_est, PDF] = Simulate_StaticBSPADE_Receiver(xsk_0,N,M,sigma,splitti
 %               equivalent to a fully direct imaging receiver.
 %%%%%%%%%%% OUTPUTS %%%%%%%%%%%%
 %   xsk_est :   [1,3] vector of parameter estimates [x0_mle,s0_mmmse,k0_mmse]
-%   PDF     :   A structure with all priors and marginalized posterior
+%   outdata     :   A structure with all priors and marginalized posterior
 %               distributions of the estimators and their domains.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % author(s):    Nico Deshler, ndeshler@arizona.edu
@@ -120,12 +120,14 @@ end
 
 % marginal distribution on separation
 P_s = sum(P_sIe.*p_e,2)*de;
+P_s = P_s./(sum(P_s)*ds); % normalize
 
 % get the conditional posterior distribution on the brightness
 P_kIse = DI_likelihood./(sum(DI_likelihood,4)*dk + 1e-20);
 
 % get the marginal distribution on the brightness
 P_k = sum(P_kIse.*P_sIe.*p_e,[2,3])*ds*de;
+P_k = P_k./(sum(P_k)*dk); % normalize
 
 % Get MMSE estimator for separation
 s_mmse = sum(P_s.*s,3)*ds;
@@ -133,22 +135,25 @@ s_mmse = sum(P_s.*s,3)*ds;
 % Get MMSE estimator for brightness
 k_mmse = sum(P_k.*k,4)*dk;
 
-% collect outputs estimates
+% get conditional Max likelihood estimator for brightness
+k_mle = mean(xx)/(2*s_mmse);
+k_mle = min(max(-.5,k_mle),.5);
+
+% collect estimates
 xsk_est = [x0_est,s_mmse,k_mmse];
 
 % and distributions
-PDF.xsk_0 = xsk_0;         % ground truth params
-PDF.xsk_est = xsk_est;     % estimated params
-PDF.k0 = k0;               % ground truth k
-PDF.x = e+x0_est;          % domain of x0 estimator
-PDF.s = s;                 % domain of s estimator
-PDF.k = k;                 % domian of k estimator
-PDF.P_x0 = p_e;            % posterior distribution on x0 estimator
-PDF.P_s = P_s;             % marginal distribution on s estimator
-PDF.P_k = P_k;             % marginal distribution on k estimator
-PDF.photons = [M1,M2,N];   % photons allocated to each stage
+outdata.xsk_0 = xsk_0;         % ground truth params
+outdata.xsk_est = xsk_est;     % estimated params
+outdata.x = e+x0_est;          % domain of x0 estimator
+outdata.s = s;                 % domain of s estimator
+outdata.k = k;                 % domian of k estimator
+outdata.P_x0 = p_e;            % posterior distribution on x0 estimator
+outdata.P_s = P_s;             % marginal distribution on s estimator
+outdata.P_k = P_k;             % marginal distribution on k estimator
+outdata.photons = [M1,M2,N];   % photons allocated to each stage
 if M2>0
-    PDF.p_s = p_s;         % prior on s estimator
+    outdata.p_s = p_s;         % prior on s estimator
 end
 
 end

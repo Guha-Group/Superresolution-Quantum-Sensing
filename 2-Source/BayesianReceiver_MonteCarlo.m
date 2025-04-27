@@ -25,10 +25,10 @@ sigma = 1;
 x0 = 0;
 k_range = 0:.1:.4;
 s_range = sigma*linspace(.01,.5,50);
-T = 500; % Trials per monte-carlo sample
-M = 1e4;
-N = 1e4;
-photons_per_adaptation = 1e3;
+T = 500; % Trials per monte-carlo samples
+M = 1e5;
+N = 1e5;
+photons_per_adaptation = 1e4;
 splitting_ratio = .5; 
 
 
@@ -47,11 +47,11 @@ sim_struct.splitting_ratio = splitting_ratio;
 
 
 % containers for holding results
-XSK_0 = zeros(3,numel(s_range),numel(k_range),T);
+XSK_0 = zeros(3,numel(k_range),numel(s_range),T);
 XSK_EST_DI = XSK_0; 
 XSK_EST_SB = XSK_0; 
-XSK_EST_AB = XSK_0; 
-PHOTONS_AB = zeros(2,numel(s_range),numel(k_range),T);
+%XSK_EST_AB = XSK_0; 
+%PHOTONS_AB = zeros(2,numel(k_range),numel(s_range),T);
 
 parpool(num_workers)
 
@@ -79,20 +79,21 @@ for ns = 1:numel(s_range)
         [xsk_SB,~] = SimulateReceiver(xsk_0,N,'StaticBSPADE',M,splitting_ratio);
         
         %% Adaptive BSPADE
-        [xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
+        %[xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
         
         % store results
         XSK_0(:,nk,ns,t) = xsk_0;
         XSK_EST_DI(:,nk,ns,t) = xsk_DI;
         XSK_EST_SB(:,nk,ns,t) = xsk_SB;
-        XSK_EST_AB(:,nk,ns,t) = xsk_AB;
-        PHOTONS_AB(:,nk,ns,t) = PDF_AB.photons(1:2);
+        %XSK_EST_AB(:,nk,ns,t) = xsk_AB;
+        %PHOTONS_AB(:,nk,ns,t) = PDF_AB.photons(1:2);
     
     end
     
     % save 
     save(fullfile(directory_name,['MonteCarlo_2Source_ReceiverSurvey',num2str(array_id),'.mat']),...
-        'sim_struct','XSK_0','XSK_EST_DI','XSK_EST_SB','XSK_EST_AB','PHOTONS_AB')
+        'sim_struct','XSK_0','XSK_EST_DI','XSK_EST_SB');
+        %'XSK_EST_AB','PHOTONS_AB')
 end
 %end
 end

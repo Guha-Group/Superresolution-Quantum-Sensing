@@ -1,4 +1,4 @@
-function [xsk_est, PDF] = Simulate_ThresholdBSPADE_Receiver(xsk_0,N,sigma,dm,target_std_s)
+function [xsk_est, outdata] = Simulate_ThresholdBSPADE_Receiver(xsk_0,N,sigma,dm,target_std_s)
 % Description:
 % Simulate a 2-stage receiver where one allocates as many resources as
 % needed to the calibration stage in order to guarantee good localization.
@@ -129,19 +129,22 @@ s_mmse = sum(P_s.*s*ds,3);
 % Get MMSE estimator for brightness
 k_mmse = sum(P_k.*k*dk,4);
 
+% get conditional Max likelihood estimator for brightness
+k_mle = mean(xx)/(2*s_mmse);
+k_mle = min(max(-.5,k_mle),.5);
+
 % collect the estimates
 xsk_est = [x0_est,s_mmse,k_mmse];
 
 % and distributions
-PDF.xsk_0 = xsk_0;         % ground truth params
-PDF.xsk_est = xsk_est;     % estimated params
-PDF.k0 = k0;         % ground truth k
-PDF.x = e+x0_est;    % domain of x0 estimator
-PDF.s = s;           % domain of s estimator
-PDF.k = k;           % domian of k estimator
-PDF.p_s = p_s;       % prior on s estimator
-PDF.P_x0 = p_e;      % posterior distribution on x0 estimator
-PDF.P_s = P_s;       % marginal posterior distribution on s estimator
-PDF.P_k = P_k;       % marginal posterior distribution on k estimator
-PDF.photons = [M1,M2,N]; % photons allocated to each stage
+outdata.xsk_0 = xsk_0;         % ground truth params
+outdata.xsk_est = xsk_est;     % estimated params
+outdata.x = e+x0_est;    % domain of x0 estimator
+outdata.s = s;           % domain of s estimator
+outdata.k = k;           % domian of k estimator
+outdata.p_s = p_s;       % prior on s estimator
+outdata.P_x0 = p_e;      % posterior distribution on x0 estimator
+outdata.P_s = P_s;       % marginal posterior distribution on s estimator
+outdata.P_k = P_k;       % marginal posterior distribution on k estimator
+outdata.photons = [M1,M2,N]; % photons allocated to each stage
 end

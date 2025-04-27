@@ -6,14 +6,18 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
      % mom2_est>1 which corresponds to a situation where there is
      % definitively a non-zero separation between two point sources.
 
+     min_mom2 = 1+5e-3; % threshold second moment value for stability
+
      % Attempt 1: 
      % Try the basic moment approximations (guaranteed to work for large enough numbers of samples)
      x0_est = mean(x);
      mom2_est = mean(((x-x0_est)/sigma).^2);
      M1_mom2 = numel(x);
 
-     % check if the whitened second moment is less than 1 
-     if mom2_est<1
+
+     % check if the whitened second moment is less than minimum second
+     % moment
+     if mom2_est<min_mom2
          
         % Attempt 2: 
         % Try solving system of nonlinear equations for solving simultaneous
@@ -24,9 +28,10 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
         mle_out = fsolve(DI_MLE,[0,sigma*.5],options);
         x0_mle = mle_out(1);    
         s_mle = mle_out(2);
+        mom2_est = 1 + (s_mle/sigma)^2;
 
         % check if the MLE solution is valid 
-        if s_mle<1e-7 % smallest value possible such that floating point precision doesn't snap to zero when squaring
+        if mom2_est<min_mom2 
             
             
             % Attempt 3:
@@ -42,9 +47,9 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
             [~,dist_to_midpoint] = sort(abs(x-x0_est)); 
             x_reduced = x(dist_to_midpoint);
 
-            % while the second moment is less than 1 and we have samples
+            % while the second moment is less than the minimum and we have samples
             % left...
-            while (mom2_est) < 1 && (numel(x_reduced) > 0)
+            while (mom2_est < min_mom2) && (numel(x_reduced) > 0)
                 % peel off a sample
                 x_reduced = x_reduced(2:end);
                 % compute the second moment on the reduced sample set
@@ -52,13 +57,13 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
             end
             
             % check if the whitened second moment is less than one
-            if mom2_est < 1
+            if mom2_est < min_mom2
 
                 % Attempt 4: 
                 % At this point we have no other options but to set the
                 % second moment to be some small perturbation greater than
                 % one.
-                mom2_est = 1+ 1e-6;
+                mom2_est = min_mom2;
             else
                 M1_mom2 = numel(x_reduced);
             end
