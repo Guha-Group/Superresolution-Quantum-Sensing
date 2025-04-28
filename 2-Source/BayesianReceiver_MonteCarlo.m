@@ -24,10 +24,10 @@ addpath('utils/')
 sigma = 1;
 x0 = 0;
 k_range = 0:.1:.4;
-s_range = sigma*linspace(.01,.5,50);
+s_range = sigma*linspace(.01,.25,50);
 T = 500; % Trials per monte-carlo samples
 M = 1e5;
-N = 1e5;
+N = 1e4;
 photons_per_adaptation = 1e4;
 splitting_ratio = .5; 
 

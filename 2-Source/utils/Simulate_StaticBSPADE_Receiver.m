@@ -125,6 +125,28 @@ P_s = P_s./(sum(P_s)*ds); % normalize
 % get the conditional posterior distribution on the brightness
 P_kIse = DI_likelihood./(sum(DI_likelihood,4)*dk + 1e-20);
 
+%%
+%{
+S1=0;
+S2=0;
+for i = 1:(numel(xx)-1)
+    S2 = S2 + sum(xx(i) .* xx((i+1):end));
+    S1 = S1 + sum(xx(i) +  xx((i+1):end));
+end
+
+DI_likelihood_approx = 1 + (2.*k.*s/ (sigma)^2).*(sum(xx,1)-M*e) + (2.*k.*s/ (sigma)^2).^2 .* (S2 + S1 * e + (M*(M-1)/2) * e.^2);
+P_kIse = DI_likelihood_approx./(sum(DI_likelihood_approx,4)*dk + 1e-20);
+
+
+% approximate conditional posterior on the brightness
+%xi = 2*s.*(sum(xx,1) - numel(xx)*e)/sigma^2;
+%P_kIse = exp(xi .* k)./((2./xi) .* sinh(xi/2));
+
+% conditional mmse estimator
+%k_mmse_cond = -1/xi + (1/2)*coth(xi/2);
+%k_mmse_avg = sum(k_mmse_cond.*P_sIe.*p_e,[2,3])*ds*de;
+%}
+
 % get the marginal distribution on the brightness
 P_k = sum(P_kIse.*P_sIe.*p_e,[2,3])*ds*de;
 P_k = P_k./(sum(P_k)*dk); % normalize
