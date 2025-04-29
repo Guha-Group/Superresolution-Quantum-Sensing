@@ -12,7 +12,11 @@ function L_DI_alt = DirectImagingLikelihood_approx(x,x0,s,kappa,sigma,prop_flag)
     
     if ~prop_flag
         % include common gaussian factors
-        gaussfactor = prod(normpdf(x,x0,sigma),1);
-        L_DI_alt = gaussfactor*L_DI_alt;
+        exp_factor = -1/(2*sigma^2).*sum((x-x0).^2,1);
+        exp_factor = exp_factor - (max(exp_factor) + min(exp_factor))/2;
+        gaussfactor = exp(exp_factor);
+
+        %gaussfactor = prod(normpdf(x,x0,sigma),1);
+        L_DI_alt = gaussfactor.*L_DI_alt;
     end 
 end

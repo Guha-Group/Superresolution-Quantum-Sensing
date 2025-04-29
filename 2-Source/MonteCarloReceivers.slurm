@@ -4,7 +4,7 @@
 ### use standard partition to get priority. Otherwise use windfall
 #SBATCH --partition=standard
 ### Time allowed for job.
-#SBATCH --time=00-48:00:00
+#SBATCH --time=00-12:00:00
 ### Number of nodes assigned to EACH JOB. Not the total number of nodes used.
 #SBATCH --nodes=1
 ### number of tasks
@@ -50,4 +50,4 @@
 
 module load matlab
 
-matlab matlab -nodisplay -nosplash -batch "BayesianReceiver_MonteCarlo($SLURM_ARRAY_TASK_ID,'94','TypeII_Receivers_v3')" output_{$SLURM_ARRAY_TASK_ID}.txt
+matlab matlab -nodisplay -nosplash -batch "BayesianReceiver_MonteCarlo($SLURM_ARRAY_TASK_ID,'94','TypeII_Receivers_v4')" output_{$SLURM_ARRAY_TASK_ID}.txt

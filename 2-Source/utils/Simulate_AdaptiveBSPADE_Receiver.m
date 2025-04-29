@@ -44,6 +44,8 @@ x0 = xsk_0(1);
 s0 = xsk_0(2);
 k0 = xsk_0(3);
 
+% samples per parameter
+samp_dim = 121; 
 
 % Simulate a direct imaging measurement (equal brightness)
 M1 = 0;
@@ -78,9 +80,10 @@ while ~switch_condition && M1<M
     std_s = sqrt(var_s);
     
     % make domains for midpoint and separation params
-    min_s = max(mean_s-4*std_s,1e-9); max_s = mean_s+4*std_s;
-    e = sigma/(sqrt(M1))*linspace(-3,3,71)';    de=e(2)-e(1);
-    s = linspace(min_s,max_s,71)';              ds=s(2)-s(1); 
+    min_s = max(mean_s-4*std_s,1e-9); 
+    max_s = mean_s+4*std_s;
+    e = sigma/(sqrt(M1))*linspace(-3,3,samp_dim)';    de=e(2)-e(1);
+    s = linspace(min_s,max_s,samp_dim)';              ds=s(2)-s(1); 
     
     % make each variable in a new array dimension
     e = permute(e,[2,1]);
@@ -106,7 +109,7 @@ q = BSPADEMeasurement(x0-x0_est,s0,0,M2,sigma);
 
 %% STAGE 2: ESTIMATION
 % make domain for brightness parameter
-k = linspace(-.5,.5,71)';                         dk = k(2)-k(1);
+k = linspace(-.5,.5,samp_dim)';                         dk = k(2)-k(1);
 
 % put it into a new array dimension
 k = permute(k,[4,3,2,1]);

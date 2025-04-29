@@ -23,7 +23,7 @@ function xy = LocalizeSources(xy0,mode_counts,p_model,grad_p_model,sigma)
     % Date: April 8, 2025
 
     % initialize source position estimates
-    num_sources = size(xy,1); % K sources total
+    num_sources = size(xy0,1); % K sources total
     xy = sigma*rand(size(xy)); % initial source positions
     xy = xy - mean(xy,1); % align to center of intensity
 

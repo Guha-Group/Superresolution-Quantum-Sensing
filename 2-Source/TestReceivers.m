@@ -8,23 +8,23 @@
 addpath('utils\')
 
 % ground truth parameters
-xsk_0 = [0,.07,.3]; % [midpoint,half-sep,brightness bias]
+xsk_0 = [0,.1,-.3]; % [midpoint,half-sep,brightness bias]
 M = 1e5;           % number of calibration photons
 N = 1e4;           % number of sensing photons
 
 %% Direct Imaging
-[xsk_DI,outdata_DI] = SimulateReceiver(xsk_0,N,'DirectImaging',M);
-PlotReceiver(outdata_DI,'DirectImaging');
+%[xsk_DI,outdata_DI] = SimulateReceiver(xsk_0,N,'DirectImaging',M);
+%PlotReceiver(outdata_DI,'DirectImaging');
 
 %% Static BSPADE
-splitting_ratio = .75;
-[xsk_SB,outdata_SB] = SimulateReceiver(xsk_0,N,'StaticBSPADE',M,splitting_ratio);
-PlotReceiver(outdata_SB,'StaticBSPADE');
+%splitting_ratio = .5;
+%[xsk_SB,outdata_SB] = SimulateReceiver(xsk_0,N,'StaticBSPADE',M,splitting_ratio);
+%PlotReceiver(outdata_SB,'StaticBSPADE');
 
 %% Adaptive BSPADE
-%photons_per_adaptation = 1e3;
-%[xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
-%PlotReceiver(PDF_AB,'AdaptiveBSPADE')
+photons_per_adaptation = 1e3;
+[xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
+PlotReceiver(PDF_AB,'AdaptiveBSPADE')
 
 %% Threshold BSPADE
 % photons_per_adapatation = 1e3; target_std_s=1e-3;

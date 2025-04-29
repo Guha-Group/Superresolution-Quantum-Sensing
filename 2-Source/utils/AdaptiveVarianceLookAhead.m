@@ -6,9 +6,8 @@ function E_var_s = AdaptiveVarianceLookAhead(M,m1,ps,pe,s,e,sigma)
 
     % compute the look-ahead variances for each possible value of BSPADE outcome 
     L_BS = BSPADELikelihood(q,m2,e,s,0,sigma,1);          % BSPADE likelihood
-    %L_BS = BSPADELikelihood_approx(q,m2,e,s,0,sigma);   % BSPADE likelihood (gaussian approx of binomial)
     L_BS(isnan(L_BS)) = 0;
-    p_sIeq = (L_BS.*ps)./(sum(L_BS.*ps*ds,3)+1e-20);            % posterior probability on separation
+    p_sIeq = (L_BS.*ps)./(sum(L_BS.*ps*ds,3)+1e-20);    % posterior probability on separation
     p_sIq = sum(p_sIeq.*pe*de,2);                       % posterior probability on separation marginalized over the pointing error
     var_sIq = sum(s.^2.*p_sIq*ds,3) - sum(s.*p_sIq*ds,3).^2;    % variance of separation under the posterior for all possible BSPADE measurement outcomes
 

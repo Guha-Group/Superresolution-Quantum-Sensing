@@ -78,10 +78,12 @@ var_s = mean_s2 - mean_s^2;
 std_s = sqrt(var_s);
 
 % make domains for all three parameters.
-min_s = max(mean_s-4*std_s,1e-9); max_s = mean_s+4*std_s;
-e = sigma/(sqrt(M1))*linspace(-3,3,71)';           de = e(2)-e(1);
-s = linspace(min_s,max_s,71)';                    ds = s(2)-s(1);
-k = linspace(-.5,.5,71)';                         dk = k(2)-k(1);
+samp_dim = 121; % samples per parameter
+min_s = max(mean_s-4*std_s,1e-9); 
+max_s = mean_s+4*std_s;
+e = sigma/(sqrt(M1))*linspace(-3,3,samp_dim)';          de = e(2)-e(1);
+s = linspace(min_s,max_s,samp_dim)';                    ds = s(2)-s(1);
+k = linspace(-.5,.5,samp_dim)';                         dk = k(2)-k(1);
 
 % make each variable in a new array dimension
 e = permute(e,[2,1]);
@@ -98,12 +100,6 @@ if M2>0
 end
 
 %% STAGE 2: ESTIMATION
-% simulate a direct imaging measurement (biased brightness)
-xx = DirectImagingMeasurement(x0-x0_est,s0,k0,N,sigma);
-
-% compute direct imaging likelihood
-DI_likelihood = DirectImagingLikelihood_approx(xx,e,s,k,sigma,1);
-DI_likelihood(isinf(DI_likelihood)) = max(DI_likelihood(~isinf(DI_likelihood)),[],'all'); % remove infs
 
 % prior distributions
 p_e = normpdf(e,0,sigma/sqrt(M1));
@@ -122,8 +118,28 @@ end
 P_s = sum(P_sIe.*p_e,2)*de;
 P_s = P_s./(sum(P_s)*ds); % normalize
 
+% simulate a direct imaging measurement (biased brightness)
+xx = DirectImagingMeasurement(x0-x0_est,s0,k0,N,sigma);
+
+%{ 
+%ORIGINAL
+% compute direct imaging likelihood
+DI_likelihood = DirectImagingLikelihood_approx(xx,e,s,k,sigma,1);
+DI_likelihood(isinf(DI_likelihood)) = max(DI_likelihood(~isinf(DI_likelihood)),[],'all'); % remove infs
+
 % get the conditional posterior distribution on the brightness
 P_kIse = DI_likelihood./(sum(DI_likelihood,4)*dk + 1e-20);
+
+% get the marginal distribution on the brightness
+P_k = sum(P_kIse.*P_sIe.*p_e,[2,3])*ds*de;
+P_k = P_k./(sum(P_k)*dk); % normalize
+%}
+
+DI_likelihood = DirectImagingLikelihood_approx(xx,e,s,k,sigma,0);
+DI_likelihood(isinf(DI_likelihood)) = max(DI_likelihood(~isinf(DI_likelihood)),[],'all'); % remove infs
+
+LL = sum(DI_likelihood.*P_sIe.*p_e,[2,3])*ds*de;
+P_k = LL;
 
 %%
 %{
@@ -147,22 +163,24 @@ P_kIse = DI_likelihood_approx./(sum(DI_likelihood_approx,4)*dk + 1e-20);
 %k_mmse_avg = sum(k_mmse_cond.*P_sIe.*p_e,[2,3])*ds*de;
 %}
 
-% get the marginal distribution on the brightness
-P_k = sum(P_kIse.*P_sIe.*p_e,[2,3])*ds*de;
-P_k = P_k./(sum(P_k)*dk); % normalize
 
 % Get MMSE estimator for separation
 s_mmse = sum(P_s.*s,3)*ds;
 
 % Get MMSE estimator for brightness
-k_mmse = sum(P_k.*k,4)*dk;
+%k_mmse = sum(P_k.*k,4)*dk;
 
 % get conditional Max likelihood estimator for brightness
-k_mle = mean(xx)/(2*s_mmse);
-k_mle = min(max(-.5,k_mle),.5);
+%k_mle = mean(xx)/(2*s_mmse);
+%k_mle = min(max(-.5,k_mle),.5);
+
+% get map for integrated likelihood under uniform
+%LL = sum(DI_likelihood.*P_sIe.*p_e,[2,3])*ds*de;
+[~,map_id] = max(LL);
+k_map = k(map_id);
 
 % collect estimates
-xsk_est = [x0_est,s_mmse,k_mmse];
+xsk_est = [x0_est,s_mmse,k_map];
 
 % and distributions
 outdata.xsk_0 = xsk_0;         % ground truth params
