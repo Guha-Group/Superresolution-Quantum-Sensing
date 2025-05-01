@@ -24,10 +24,10 @@ addpath('utils/')
 sigma = 1;
 x0 = 0;
 k_range = 0:.1:.4;
-s_range = sigma*linspace(.01,.25,50);
+s_range = sigma*linspace(.01,1,200);
 T = 500; % Trials per monte-carlo samples
-M = 5e4;
-N = 1e4;
+M = 1e5;
+N = 1e5;
 photons_per_adaptation = 1e4;
 splitting_ratio = .5; 
 
@@ -47,9 +47,9 @@ sim_struct.splitting_ratio = splitting_ratio;
 
 
 % containers for holding results
-XSK_0 = zeros(3,numel(k_range),numel(s_range),T);
-XSK_EST_DI = XSK_0; 
-XSK_EST_SB = XSK_0; 
+XSK_0 = zeros(3,numel(k_range),numel(s_range));
+XSK_EST_DI = zeros(3,numel(k_range),numel(s_range),T); 
+XSK_EST_SB = zeros(3,numel(k_range),numel(s_range),T); 
 %XSK_EST_AB = XSK_0; 
 %PHOTONS_AB = zeros(2,numel(k_range),numel(s_range),T);
 
@@ -60,6 +60,12 @@ nk = array_id;
 k = k_range(nk);
 for ns = 1:numel(s_range)
     s = s_range(ns);
+
+    % construct the parameter vector
+    xsk_0 = [x0,s,k];
+    
+    % store it in the ground truth set
+    XSK_0(:,nk,ns) = xsk_0;
     parfor t = 1:T
     
         % display current iter
@@ -68,9 +74,6 @@ for ns = 1:numel(s_range)
         % random number generation seed should be unique for each
         % worker in parfor loop
         rng(nk+ns+t);
-    
-        % construct the parameter vector
-        xsk_0 = [x0,s,k];
     
         %% Direct Imaging
         [xsk_DI,~] = SimulateReceiver(xsk_0,N,'DirectImaging',M);
@@ -82,7 +85,6 @@ for ns = 1:numel(s_range)
         %[xsk_AB,PDF_AB] = SimulateReceiver(xsk_0,N,'AdaptiveBSPADE',M,photons_per_adaptation);
         
         % store results
-        XSK_0(:,nk,ns,t) = xsk_0;
         XSK_EST_DI(:,nk,ns,t) = xsk_DI;
         XSK_EST_SB(:,nk,ns,t) = xsk_SB;
         %XSK_EST_AB(:,nk,ns,t) = xsk_AB;

@@ -50,4 +50,4 @@
 
 module load matlab
 
-matlab matlab -nodisplay -nosplash -batch "BayesianReceiver_MonteCarlo($SLURM_ARRAY_TASK_ID,'94','TypeII_Receivers_v4')" output_{$SLURM_ARRAY_TASK_ID}.txt
+matlab matlab -nodisplay -nosplash -batch "BayesianReceiver_MonteCarlo($SLURM_ARRAY_TASK_ID,'94','TypeII_Receivers_ConditionalMaxLikelihood')" output_{$SLURM_ARRAY_TASK_ID}.txt

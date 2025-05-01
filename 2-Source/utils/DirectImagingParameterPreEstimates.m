@@ -6,7 +6,7 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
      % mom2_est>1 which corresponds to a situation where there is
      % definitively a non-zero separation between two point sources.
 
-     min_mom2 = 1+1e-2; % threshold second moment value for stability
+     min_mom2 = 1+5e-3; % threshold second moment value for stability
 
      % Attempt 1: 
      % Try the basic moment approximations (guaranteed to work for large enough numbers of samples)
@@ -38,9 +38,7 @@ function [x0_est,mom2_est,M1_mom2] = DirectImagingParameterPreEstimates(x,sigma)
             % try peeling off samples near the midpoint until the second moment is
             % larger that 1 (biases the samples to concentrate away from
             % the first moment)
-            
-            % estimate midpoint
-            x0_est = mean(x); 
+
             
             % sort the samples in ascending order based on their absolute 
             % distance to the midpoint

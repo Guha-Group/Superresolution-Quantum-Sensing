@@ -78,7 +78,7 @@ var_s = mean_s2 - mean_s^2;
 std_s = sqrt(var_s);
 
 % make domains for all three parameters.
-samp_dim = 121; % samples per parameter
+samp_dim = 81; % samples per parameter
 min_s = max(mean_s-4*std_s,1e-9); 
 max_s = mean_s+4*std_s;
 e = sigma/(sqrt(M1))*linspace(-3,3,samp_dim)';          de = e(2)-e(1);
@@ -135,11 +135,11 @@ P_k = sum(P_kIse.*P_sIe.*p_e,[2,3])*ds*de;
 P_k = P_k./(sum(P_k)*dk); % normalize
 %}
 
-DI_likelihood = DirectImagingLikelihood_approx(xx,e,s,k,sigma,0);
-DI_likelihood(isinf(DI_likelihood)) = max(DI_likelihood(~isinf(DI_likelihood)),[],'all'); % remove infs
+%DI_likelihood = DirectImagingLikelihood_approx(xx,e,s,k,sigma,0);
+%DI_likelihood(isinf(DI_likelihood)) = max(DI_likelihood(~isinf(DI_likelihood)),[],'all'); % remove infs
 
-LL = sum(DI_likelihood.*P_sIe.*p_e,[2,3])*ds*de;
-P_k = LL;
+%LL = sum(DI_likelihood.*P_sIe.*p_e,[2,3])*ds*de;
+%P_k = LL;
 
 %%
 %{
@@ -171,16 +171,17 @@ s_mmse = sum(P_s.*s,3)*ds;
 %k_mmse = sum(P_k.*k,4)*dk;
 
 % get conditional Max likelihood estimator for brightness
-%k_mle = mean(xx)/(2*s_mmse);
-%k_mle = min(max(-.5,k_mle),.5);
+k_mle = mean(xx)/(2*s_mmse);
+k_mle = min(max(-.5,k_mle),.5);
+P_k = ones(size(k));
 
 % get map for integrated likelihood under uniform
 %LL = sum(DI_likelihood.*P_sIe.*p_e,[2,3])*ds*de;
-[~,map_id] = max(LL);
-k_map = k(map_id);
+%[~,map_id] = max(LL);
+%k_map = k(map_id);
 
 % collect estimates
-xsk_est = [x0_est,s_mmse,k_map];
+xsk_est = [x0_est,s_mmse,k_mle];
 
 % and distributions
 outdata.xsk_0 = xsk_0;         % ground truth params
