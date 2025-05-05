@@ -26,6 +26,8 @@ CFI_BS = zeros(numel(s),numel(M2_range));
 %parfor n=1:numel(M1_range)
 for n=1:numel(M1_range)
     M2 = M2_range(n);
+
+    disp('Got to 1')
     
     % evaluate the distribution on the pointing error
     e_sig = sqrt(sigma^2/(M-M2));
