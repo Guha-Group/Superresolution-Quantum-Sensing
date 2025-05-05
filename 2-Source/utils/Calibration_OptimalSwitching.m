@@ -8,7 +8,7 @@ edim = 101;
 sigma = 1;
 
 % Total photon count
-M = 1e5;
+M = 5e4;
 
 % separation range to consider
 s = sigma.*exp(linspace(log(.01),log(1),101))';
@@ -50,7 +50,8 @@ parfor n=1:numel(M1_range)
 
 end
 
-save('Calibration_OptimalSwitching_FisherInformation.mat','CFI_BS','M','M2_range','sigma','s','dm','edim')
+save('Calibration_OptimalSwitching_FisherInformation.mat');
+%,'CFI_BS','M','M2_range','sigma','s','dm','edim')
 
 %{
 CFI_BS_opt = max(CFI_BS,[],2);
