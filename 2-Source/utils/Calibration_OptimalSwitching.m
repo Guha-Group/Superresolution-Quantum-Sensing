@@ -22,8 +22,9 @@ M1_range = 1:dm:M;
 M2_range = M-M1_range;
 CFI_BS = zeros(numel(s),numel(M2_range));
 
-parpool(94)
-parfor n=1:numel(M1_range)
+%parpool(94)
+%parfor n=1:numel(M1_range)
+for n=1:numel(M1_range)
     M2 = M2_range(n);
     
     % evaluate the distribution on the pointing error
@@ -47,6 +48,9 @@ parfor n=1:numel(M1_range)
     
     % compute the CFI (w analytic gradient)
     CFI_BS(:,n) = squeeze(sum( dP_BS.^2 ./ (P_BS+1e-20),1));
+
+    % display count
+    fprintf('%d : %d',n,M);
 
 end
 
