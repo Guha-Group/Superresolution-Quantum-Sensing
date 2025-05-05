@@ -36,18 +36,21 @@ for n=1:numel(M1_range)
     de = e(2)-e(1);
     p_e = normpdf(e,0,e_sig);
 
+
     % evaluate the conditional binomial distribution
     q0 = (0:M2)';
     Q = .5*(exp(-(e+s).^2/(2*sigma^2)) + exp(-(e-s).^2/(2*sigma^2)));
+    disp('Got to 2')
     p_BS =  BSPADELikelihood(q0,M2,e,s,0,sigma,1);
 
+    disp('Got to 3')
     % marginalize the binomial distribution with respect to pointing error
     P_BS = sum(p_BS.*p_e,2)*de;
 
     % compute the numerical derivative of the marginalized BS
     dP_BS = p_BS .* (q0-M2.*Q)./(1-Q).*(e.*tanh(e.*s/sigma^2)-s)/sigma^2;
     dP_BS = sum(dP_BS.*p_e,2)*de;
-    
+    disp('Got to 4')
     % compute the CFI (w analytic gradient)
     CFI_BS(:,n) = squeeze(sum( dP_BS.^2 ./ (P_BS+1e-20),1));
 
