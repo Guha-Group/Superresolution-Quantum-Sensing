@@ -8,7 +8,7 @@ edim = 101;
 sigma = 1;
 
 % Total photon count
-M = 5e4;
+M = 1e4;
 
 % separation range to consider
 s = sigma.*exp(linspace(log(.01),log(1),101))';
