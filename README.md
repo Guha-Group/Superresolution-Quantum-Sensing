@@ -7,3 +7,8 @@ This repository contains a simulation pipeline for modelling a multi-stage recei
 ## Components
 For pedagogical purposes, we break up the repository into two estimation contexts. The first context employs the multi-stage sensing protocol for a system consisting of 2 color centers separated by a sub-diffraction length along one dimension. Scripts associated with this system can be found in the 
 ```2-Source/``` directory. The second context employs our multi-stage sensing protocol for a system consisting of $K$ color centers, all of which reside in a sub-diffraction spot in two dimensions. Scripts associated with this system can be found in the ```K-Source``` directory.
+
+## Required Packages
+The K-Source sensing algorithm requires downloading the [manopt](https://www.manopt.org/) package. This package is used to numerically find the Helstrom/YKL measurements for optimal sensing. It is also used for solving the maximum likelihood estimate of the source brightnesses. Make sure to install the Manopt package in the ```K-Source/utils/``` directory.
+
+
