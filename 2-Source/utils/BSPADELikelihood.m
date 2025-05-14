@@ -24,7 +24,7 @@ function L_BS = BSPADELikelihood(q0,n,x0,s,kappa,sigma,norm_approx)
     % compute the BSPADE likelihood
     if norm_approx
         %criterion for normal approximation to binomial
-        use_normal_approx = n.*p0.*(1-p0)>10;
+        use_normal_approx = n.*p0.*(1-p0)>20;
         L_BS = normpdf(q0,n*p0,sqrt(n.*p0.*(1-p0)));
         L_BS(:,~use_normal_approx) = binopdf(Q0(:,~use_normal_approx),n,P0(:,~use_normal_approx));
     else
