@@ -25,5 +25,8 @@ problem.cost = @(x) D_KL(ps,Q*x);               % cost is the KL divergence
 %problem.egrad = @(x) Q.'*(ns./(Q*x));          % euclidean gradient of the KL cost
 
 % solve for the brightness estimate
-[b_est,~,~,~] = trustregions(problem);
+options.verbosity = 0;
+warning('off', 'manopt:getGradient:approx');
+warning('off', 'manopt:getHessian:approx');
+[b_est,~,~,~] = trustregions(problem,[],options);
 end

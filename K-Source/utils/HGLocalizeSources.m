@@ -1,4 +1,4 @@
-function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles)
+function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles,visualize_flag)
     % Description:
     % Estimates the position of multiple point sources in a 2D field of view
     % from the measurement outcomes mode_counts and measurement mode
@@ -15,6 +15,8 @@ function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles)
     % grad_p_model  :   @fn(xy) function handle to the gradient of the mode
     %                   measurement probability w.r.t each source
     %                   coordinate. Returns an array of size [2,K,M,D]
+    % visualize_flag:   Boolean indicating whether to show performance
+    %                   plots or not.
     %%%%%%%%%% OUTPUTS %%%%%%%%%%%%
     % xy            :   [K,2] matrix of estimated cartesian coordinates for
     %                   all of the sources
@@ -89,44 +91,44 @@ function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles)
 
     % break degeneracies in final estimate
     xy = BreakDegeneracies(xy,xy0);
-  
         
-% -------------------%
-% debugging plot
-figure
-tiledlayout(1,3,'Padding','compact','TileSpacing','compact')
-nexttile(1)
-plot(1:t,loglike_track(1:t),'k','LineWidth',1.5)
-axis square; box on; grid on;
-xlabel('iter'); ylabel('Log Likelihood');
-set(gca,'yscale','log'); set(gca,'xscale','log'); 
-title('Log-Likelihood Trace','Interpreter','latex');
-
-nexttile(2)
-plot(1:t,len_gradvec_track(1:t),'k','LineWidth',1.5)
-xlabel('iter'); ylabel('Gradient Vector Length'); axis square; box on; grid on;
-set(gca,'yscale','log'); %set(gca,'xscale','log'); 
-title('Gradient Vector Length Trace','Interpreter','latex');
-
-nexttile(3)
-id = 1:100:t;
-constellation_colors = turbo(numel(id));
-hold on
-for k = 1:numel(id)
-    scatter(xy_track(:,1,id(k)),xy_track(:,2,id(k)),20,constellation_colors(k,:),...
-        'filled','MarkerEdgeAlpha',1,'MarkerFaceAlpha',exp(-5* (1- (k/numel(id)))));
-end
-scatter(xy(:,1),xy(:,2),20,'r','d','filled')
-scatter(xy0(:,1),xy0(:,2),20,'k','filled')
-hold off
-
-axis square; box on; grid on;
-xticks(-1:.5:1); yticks(-1:.5:1);
-xlim([-1,1]); ylim([-1,1]);
-xlabel('$x/\sigma$','interpreter','latex')
-ylabel('$y/\sigma$','interpreter','latex')
-title('Source Location Estimates','interpreter','latex')
-%--------------------%
+    % -------------------%
+    if visualize_flag
+        figure
+        tiledlayout(1,3,'Padding','compact','TileSpacing','compact')
+        nexttile(1)
+        plot(1:t,loglike_track(1:t),'k','LineWidth',1.5)
+        axis square; box on; grid on;
+        xlabel('iter'); ylabel('Log Likelihood');
+        set(gca,'yscale','log'); set(gca,'xscale','log'); 
+        title('Log-Likelihood Trace','Interpreter','latex');
+        
+        nexttile(2)
+        plot(1:t,len_gradvec_track(1:t),'k','LineWidth',1.5)
+        xlabel('iter'); ylabel('Gradient Vector Length'); axis square; box on; grid on;
+        set(gca,'yscale','log'); %set(gca,'xscale','log'); 
+        title('Gradient Vector Length Trace','Interpreter','latex');
+        
+        nexttile(3)
+        id = 1:100:t;
+        constellation_colors = turbo(numel(id));
+        hold on
+        for k = 1:numel(id)
+            scatter(xy_track(:,1,id(k)),xy_track(:,2,id(k)),20,constellation_colors(k,:),...
+                'filled','MarkerEdgeAlpha',1,'MarkerFaceAlpha',exp(-5* (1- (k/numel(id)))));
+        end
+        scatter(xy(:,1),xy(:,2),20,'r','d','filled')
+        scatter(xy0(:,1),xy0(:,2),20,'k','filled')
+        hold off
+        
+        axis square; box on; grid on;
+        xticks(-1:.5:1); yticks(-1:.5:1);
+        xlim([-1,1]); ylim([-1,1]);
+        xlabel('$x/\sigma$','interpreter','latex')
+        ylabel('$y/\sigma$','interpreter','latex')
+        title('Source Location Estimates','interpreter','latex')
+    end
+    %--------------------%
 end
 
 

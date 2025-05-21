@@ -8,29 +8,24 @@
 addpath('utils\')
 
 % ground truth parameters
+sigma = 1;                          
 num_sources = 4;
-sigma = 1;
-xy = sigma*(rand(num_sources,2)-.5);
-b = dirchrnd(3*rand(num_sources,1)); 
-b = sort(b,'ascend');
-xyb = [xy,b];
-n_max = 10;
+min_sep_frac = sigma/8;
+contrast = .1;
+visualize_flag = 1;
+
+% generate scene
+xyb = GenerateRandomConstellation(num_sources,min_sep_frac,contrast,sigma);
 
 % Photon Allocations
-M = 1e6;           % number of calibration photons
-N = 1e6;           % number of sensing photons
+M = 1e5;           % number of calibration photons
+N = 1e5;           % number of sensing photons
 
 % simulate SPADE estimation receiver
 splitting_ratio = .1;
+n_max = 10;
 [n,m] = HGIndices(n_max);
-xyb_SS = SimulateReceiver(xyb,M,N,'StaticSPADE',splitting_ratio,[n,m]);
+xyb_SS = SimulateReceiver(xyb,M,N,'StaticSPADE',splitting_ratio,[n,m],sigma,visualize_flag);
 
 % simulate direct imaging receiver
-%[xyb_DI,outdata_DI] = SimulateDirectImaging(xyb,M,N,'DirectImaging',sigma);
-
-function x = dirchrnd(alpha)
-    % randomly samples dirichlet random variables with rate parameters
-    % given by alpha [K,1]
-    y = gamrnd(1,alpha);
-    x = y./sum(y,1);
-end
+xyb_DI = SimulateReceiver(xyb,M,N,'DirectImaging',sigma,visualize_flag);

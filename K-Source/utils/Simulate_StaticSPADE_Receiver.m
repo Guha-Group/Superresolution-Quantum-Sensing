@@ -1,4 +1,4 @@
-function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,nm)
+function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,nm,visualize_flag)
     % Simulates a Multi-stage SPADE-enhanced receiver for performing
     % sub-diffraction color center sensing. 
     % DESCRIPTION: The receiver executes a
@@ -20,6 +20,8 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     % sigma             : Rayleigh unit
     % splitting_ratio   : fraction of photons to direct imaging measurements
     % nm                : [M,2] HG mode indices
+    % visualize_flag    : boolean value indicating whether results are to
+    %                     be displayed or not.
     %%%%%%%%%%%%%%%%%%%
     %%%% OUTPUTS %%%%%%
     %%%%%%%%%%%%%%%%%%%
@@ -55,24 +57,9 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     nm_samples = HGSPADEMeasurement(xyb0,nm,M2,sigma,rot_angles);
 
     % estimate the source positions from the spade measurement
-    xy_est = HGLocalizeSources(xy,nm,nm_samples,sigma,rot_angles);
+    xy_est = HGLocalizeSources(xy,nm,nm_samples,sigma,rot_angles,visualize_flag);
     
-    %--------------------------------------------------%
-    % debugging plot
-    figure
-    hold on
-    scatter(xy(:,1),xy(:,2),'k','filled')
-    scatter(xy_est(:,1),xy_est(:,2),'r','d','filled')
-    hold off
-    axis square; box on; grid on;
-    xticks(-1:.5:1); yticks(-1:.5:1);
-    xlim([-1,1]); ylim([-1,1]);
-    xlabel('$x/\sigma$','interpreter','latex')
-    ylabel('$y/\sigma$','interpreter','latex')
-    title('Source Location Estimates','interpreter','latex')
-    legend({'Ground Truth','Estimate'},'interpreter','latex')
-    %--------------------------------------------------%
-
+   
     %% SENSING STAGE
 
     % set the sensing scene (unequal brightness)
@@ -92,12 +79,11 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     xyb_est = [xy_est,b_pre_est];
     
     % formulate YKL measurement
-    [YKL_samples,YKL,Psi_est] = YKLMeasurement(xyb1,xyb_est,sigma,N2);
+    [YKL_samples,YKL,Psi_est] = YKLMeasurement(xyb1,xyb_est,sigma,N2,visualize_flag);
 
     % estimate the source brightnesses 
     b_est = EstimateBrightnessYKL(YKL_samples,YKL,Psi_est);
-    %b_est = flip(b_est);
-
+    
     % revert the estimates to their original coordinate system
     xy_est = xy_est + centroid_est;
     
@@ -107,50 +93,51 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     xyb_est = xyb_est(id,:);
 
     %--------------------------------------------------%
-    % debugging plot
-    figure
-    tiledlayout(1,3,"TileSpacing","compact","Padding","compact")
-
-    nexttile(1)
-    hold on
-    scatter(xyb(:,1),xyb(:,2),'k','filled')
-    scatter(xyb_est(:,1),xyb_est(:,2),'r','d')
-    hold off
-    axis square; box on; grid on;
-    xticks(-1:.5:1); yticks(-1:.5:1);
-    xlim([-1,1]); ylim([-1,1]);
-    xlabel('$x/\sigma$','interpreter','latex')
-    ylabel('$y/\sigma$','interpreter','latex')
-    title('Location Estimates','interpreter','latex')
-    legend({'Ground Truth','Estimate'},'interpreter','latex')
-
-    nexttile(2)
+    % visualize estimates
+    if visualize_flag
+        figure
+        T = tiledlayout(1,3,"TileSpacing","compact","Padding","compact");
+        title(T,'SPADE Receiver','interpreter','latex')
+        
+        % show localization estimates
+        nexttile(1)
+        hold on
+        scatter(xyb(:,1),xyb(:,2),'k','filled')
+        scatter(xyb_est(:,1),xyb_est(:,2),'r','d')
+        hold off
+        axis square; box on; grid on;
+        xticks(-1:.5:1); yticks(-1:.5:1);
+        xlim([-1,1]); ylim([-1,1]);
+        xlabel('$x/\sigma$','interpreter','latex')
+        ylabel('$y/\sigma$','interpreter','latex')
+        title('Location Estimates','interpreter','latex')
+        legend({'Ground Truth','Estimate'},'interpreter','latex')
     
-    bar_chart = bar(1:num_sources,[xyb(:,3),xyb_est(:,3)],'FaceAlpha',.5);
-    bar_chart(1).FaceColor = [0,0,0];
-    bar_chart(2).FaceColor = [1,0,0];
-%    b1 = bar(1:num_sources,xyb(:,3),'FaceColor','k','FaceAlpha',.5)
-%    bar(1:num_sources,xyb_est(:,3),'FaceColor','r','FaceAlpha',.5)
-    
-    axis square; box on;
-    xlabel('Source Index','interpreter','latex')
-    ylabel('Relative Brightness','interpreter','latex')
-    title('Brightness Estimates','interpreter','latex')
-    legend({'Ground Truth','Estimate'},'interpreter','latex')
-
-    nexttile(3)
-    hold on
-    scatter(xyb(:,1),xyb(:,2),30*size(xyb,1)*xyb(:,3),'k','filled')
-    scatter(xyb_est(:,1),xyb_est(:,2),30*size(xyb_est,1)*xyb_est(:,3),'r','d')
-    hold off
-    axis square; box on; grid on;
-    xticks(-1:.5:1); yticks(-1:.5:1);
-    xlim([-1,1]); ylim([-1,1]);
-    xlabel('$x/\sigma$','interpreter','latex')
-    ylabel('$y/\sigma$','interpreter','latex')
-    title('Scene Reconstruction','interpreter','latex')
-    legend({'Ground Truth','Estimate'},'interpreter','latex')
-
+        % show brightness estimates
+        nexttile(2)
+        bar_chart = bar(1:num_sources,[xyb(:,3),xyb_est(:,3)],'FaceAlpha',.5);
+        bar_chart(1).FaceColor = [0,0,0];
+        bar_chart(2).FaceColor = [1,0,0];
+        axis square; box on;
+        xlabel('Source Index','interpreter','latex')
+        ylabel('Relative Brightness','interpreter','latex')
+        title('Brightness Estimates','interpreter','latex')
+        legend({'Ground Truth','Estimate'},'interpreter','latex')
+        
+        % show reconstructed scene
+        nexttile(3)
+        hold on
+        scatter(xyb(:,1),xyb(:,2),30*size(xyb,1)*xyb(:,3),'k','filled')
+        scatter(xyb_est(:,1),xyb_est(:,2),30*size(xyb_est,1)*xyb_est(:,3),'r','d')
+        hold off
+        axis square; box on; grid on;
+        xticks(-1:.5:1); yticks(-1:.5:1);
+        xlim([-1,1]); ylim([-1,1]);
+        xlabel('$x/\sigma$','interpreter','latex')
+        ylabel('$y/\sigma$','interpreter','latex')
+        title('Scene Reconstruction','interpreter','latex')
+        legend({'Ground Truth','Estimate'},'interpreter','latex')
+    end
     %--------------------------------------------------%
 
 

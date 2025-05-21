@@ -15,6 +15,7 @@ validateHGIndices = @(nm) all(nm(:) == int8(nm(:))) & all(nm(:)>=0);
 
 % default inputs
 default_sigma = 1;
+default_visualize_flag = 1;
 
 % input parser
 p = inputParser;
@@ -23,16 +24,17 @@ addRequired(p,'M',validatePositiveInteger)
 addRequired(p,'N',validatePositiveInteger)
 addRequired(p,'receiver',validateReceiver)
 addOptional(p,'sigma',default_sigma,validatePositiveReal)
+addOptional(p,'visualize_flag',default_visualize_flag)
 
 switch receiver
     case 'DirectImaging'
         parse(p,xyb,M,N,receiver,varargin{:})
-        xyb_est = Simulate_DirectImaging_Receiver(xsk_0,M,N,p.Results.sigma);
+        xyb_est = Simulate_DirectImaging_Receiver(xyb,M,N,p.Results.sigma,p.Results.visualize_flag);
 
     case 'StaticSPADE'
         addRequired(p,'splitting_ratio',validateSplittingRatio)
         addRequired(p,'nm',validateHGIndices)
         parse(p,xyb,M,N,receiver,varargin{:})
-        xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,p.Results.sigma,p.Results.splitting_ratio,p.Results.nm);
+        xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,p.Results.sigma,p.Results.splitting_ratio,p.Results.nm,p.Results.visualize_flag);
 end
 end

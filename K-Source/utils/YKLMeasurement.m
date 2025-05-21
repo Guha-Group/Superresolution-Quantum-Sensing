@@ -1,4 +1,4 @@
-function [mode_counts,YKL,Psi_est] = YKLMeasurement(xyb,xyb_est,sigma,n)
+function [mode_counts,YKL,Psi_est] = YKLMeasurement(xyb,xyb_est,sigma,n,visualize_flag)
 % Simulates an n-photon measurement for the YKL basis under an estimate of
 % a constellation.
 
@@ -37,61 +37,50 @@ mode_counts = mnrnd(n,mode_prob)';
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Debugging Figures %%
 %%%%%%%%%%%%%%%%%%%%%%%
-figure
-num_sources = size(xyb,1);
-tiledlayout(1+num_sources,num_sources,'TileSpacing','compact','Padding','compact')
-
-% plot the ground truth and estimated source positions
-nexttile(1,[num_sources,num_sources])
-hold on
-scatter(xyb(:,1),xyb(:,2),30*num_sources*xyb(:,3),'k','filled')
-scatter(xyb_est(:,1),xyb_est(:,2),30*num_sources*xyb_est(:,3),'r','d','filled')
-hold on
-legend({'Ground Truth','Estimate'})
-axis square; box on; grid on;
-xticks(-1:.5:1); yticks(-1:.5:1);
-xlim([-1,1]); ylim([-1,1]);
-xlabel('$x/\sigma$','interpreter','latex')
-ylabel('$y/\sigma$','interpreter','latex')
-title('Source Location Estimates','interpreter','latex')
-
-% plot the YKL modes
-[X,Y] = meshgrid(sigma*linspace(-5,5,1001));
-PSF_modes = 1/sqrt(2*pi*sigma^2)*...
-            exp(- (1/(2*sigma)^2)*(...
-            (X-permute(xyb_est(:,1),[3,2,1])).^2 +...
-            (Y-permute(xyb_est(:,2),[3,2,1])).^2 ));
-colormap(turbo)
-for t = 1:num_sources
-    nexttile(num_sources^2+t)
-    mode = sum(permute(A(t,:),[3,1,2]).*PSF_modes,3);
-    imagesc([min(X(:)),max(X(:))]/sigma,[min(Y(:)),max(Y(:))]/sigma,abs(mode).^2);
-    axis square
-    set(gca,'ydir','normal')
+if visualize_flag
+    figure
+    num_sources = size(xyb,1); 
+    
+    % plot the ground truth and estimated source positions
+    hold on
+    scatter(xyb(:,1),xyb(:,2),30*num_sources*xyb(:,3),'k','filled')
+    scatter(xyb_est(:,1),xyb_est(:,2),30*num_sources*xyb_est(:,3),'r','d','filled')
+    hold off
+    legend({'Ground Truth','Estimate'})
+    axis square; box on; grid on;
+    xticks(-1:.5:1); yticks(-1:.5:1);
+    xlim([-1,1]); ylim([-1,1]);
     xlabel('$x/\sigma$','interpreter','latex')
     ylabel('$y/\sigma$','interpreter','latex')
-    title(sprintf('$|\\pi_{%d}\\rangle$',t),'interpreter','latex')
+    title('Source Location Estimates','interpreter','latex')
+    
+    % plot the YKL modes
+    [X,Y] = meshgrid(sigma*linspace(-5,5,1001));
+    PSF_modes = 1/sqrt(2*pi*sigma^2)*...
+                exp(- (1/(2*sigma)^2)*(...
+                (X-permute(xyb_est(:,1),[3,2,1])).^2 +...
+                (Y-permute(xyb_est(:,2),[3,2,1])).^2 ));
+    
+    figure
+    T = tiledlayout(floor(sqrt(num_sources)),ceil(sqrt(num_sources)),'TileSpacing','compact','Padding','compact');
+    title(T,'YKL/Helstrom Modes','interpreter','latex')
+
+    colormap(turbo)
+    for t=1:num_sources
+        nexttile(t)
+        mode = sum(permute(A(t,:),[3,1,2]).*PSF_modes,3);
+        phplot(mode)
+        %imagesc([min(X(:)),max(X(:))]/sigma,[min(Y(:)),max(Y(:))]/sigma,abs(mode).^2);
+        axis square
+        axis off
+        set(gca,'ydir','normal')
+        xlabel('$x/\sigma$','interpreter','latex')
+        ylabel('$y/\sigma$','interpreter','latex')
+        title(sprintf('$|\\pi_{%d}\\rangle$',t),'interpreter','latex')
+    
+    end
 end
-
-figure
-tiledlayout(floor(sqrt(num_sources)),ceil(sqrt(num_sources)),'TileSpacing','compact','Padding','compact')
-colormap(turbo)
-for t=1:num_sources
-    nexttile(t)
-    mode = sum(permute(A(t,:),[3,1,2]).*PSF_modes,3);
-    %phplot(mode)
-    imagesc([min(X(:)),max(X(:))]/sigma,[min(Y(:)),max(Y(:))]/sigma,abs(mode).^2);
-    axis square
-    set(gca,'ydir','normal')
-    xlabel('$x/\sigma$','interpreter','latex')
-    ylabel('$y/\sigma$','interpreter','latex')
-    title(sprintf('$|\\pi_{%d}\\rangle$',t),'interpreter','latex')
-
 end
-end
-
-
-
 
 
 %% FUNCTIONS 
@@ -145,6 +134,9 @@ function YKL = getYKL(Psi,priors)
     problem.egrad = @(x) - (sum(conj(Psi).*x,1).*priors.').*Psi;  % DO NOT FUCK WITH THIS -- TOOK YOU FOREVER TO DERIVE THE RIGHT EUCLIDEAN GRAD
     
     % solve the optimal measurement
-    [YKL,~,~,~] = trustregions(problem);
+    options.verbosity = 0;
+    warning('off', 'manopt:getGradient:approx');
+    warning('off', 'manopt:getHessian:approx');
+    [YKL,~,~,~] = trustregions(problem,[],options);
 end
 

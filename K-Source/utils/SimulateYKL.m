@@ -123,7 +123,8 @@ function YKL = getYKL(Psi,priors)
     problem.egrad = @(x) - (sum(conj(Psi).*x,1).*priors.').*Psi; % DO NOT FUCK WITH THIS -- TOOK YOU FOREVER TO DERIVE THE RIGHT EUCLIDEAN GRAD
     
     % solve the optimal measurement
-    [YKL,~,~,~] = trustregions(problem);
+    options.verbosity = 0;
+    [YKL,~,~,~] = trustregions(problem,[],options);
     
 end
 
