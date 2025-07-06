@@ -1,4 +1,4 @@
-function [mode_counts,YKL,Psi_est] = YKLMeasurement(xyb,xyb_est,sigma,n,visualize_flag)
+function [mode_counts,YKL,Psi_est,YKL_GaussRepn] = YKLMeasurement(xyb,xyb_est,sigma,n,visualize_flag)
 % Simulates an n-photon measurement for the YKL basis under an estimate of
 % a constellation.
 
@@ -19,6 +19,7 @@ YKL = getYKL(Psi_est,xyb_est(:,3));
 G_est = Psi_est'*Psi_est;
 M = YKL'*Psi_est;
 A = conj(M*inv(G_est));
+YKL_GaussRepn = A;
 
 % evaluate the overlaps between the YKL measurement projectors 
 % and the ground truth pure states
@@ -35,7 +36,7 @@ mode_prob = [mode_prob; 1-sum(mode_prob)];
 mode_counts = mnrnd(n,mode_prob)';
 
 %%%%%%%%%%%%%%%%%%%%%%%
-%% Debugging Figures %%
+%% YKL Mode Figures %%
 %%%%%%%%%%%%%%%%%%%%%%%
 if visualize_flag
     figure
@@ -65,11 +66,11 @@ if visualize_flag
     T = tiledlayout(floor(sqrt(num_sources)),ceil(sqrt(num_sources)),'TileSpacing','compact','Padding','compact');
     title(T,'YKL/Helstrom Modes','interpreter','latex')
 
-    colormap(turbo)
     for t=1:num_sources
         nexttile(t)
         mode = sum(permute(A(t,:),[3,1,2]).*PSF_modes,3);
-        phplot(mode)
+        imagescComplex([min(X(:)),max(X(:))]/sigma,[min(Y(:)),max(Y(:))]/sigma,mode,.7,0);
+        %colormap(turbo)
         %imagesc([min(X(:)),max(X(:))]/sigma,[min(Y(:)),max(Y(:))]/sigma,abs(mode).^2);
         axis square
         axis off

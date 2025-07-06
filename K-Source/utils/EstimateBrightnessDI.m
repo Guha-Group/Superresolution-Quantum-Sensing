@@ -9,28 +9,31 @@ function b_est_prev = EstimateBrightnessDI(xy_samples,xy,sigma)
 
     % conditional probability of photon arrival location given emitter
     % position mu.
-    p = @(xy_points,mu) mvnpdf(xy_points,mu,eye(2)*sigma^2);
-
+    W = zeros(size(xy_samples,1),num_sources);
+    for k = 1:num_sources
+        W(:,k) = mvnpdf(xy_samples,xy(k,:),eye(2)*sigma^2);
+    end
 
     % iteratively update the brightness estimates (maximum likelihood)
     converged = 0;
-    weights = zeros(size(xy_samples,1),num_sources);
+    max_iters = 1e3;
+    t=0;
     while ~converged
 
         % compute soft assignment weights
-        for k = 1:num_sources
-            weights(:,k) = p(xy_samples,xy(k,:));
-        end
-        weights = weights .* b_est_prev';
+        weights = W .* b_est_prev';
         weights = weights ./ sum(weights,2);
 
         % update the brightness estimate
         b_est = mean(weights,1)';
         
         % check convergence criteria
-        converged = norm(b_est-b_est_prev)<1e-3;
+        converged = (norm(b_est-b_est_prev)<1e-3) || (t==max_iters);
 
         % update previous estimate
         b_est_prev = b_est;
+
+        % update iteration counter
+        t = t+1;
     end
 end

@@ -147,19 +147,19 @@ for i = 1:3
     end
     hold off
     xlabel('$s/\sigma$','interpreter','latex')
-    ylabel(['Fisher Information  ','$I_{',parameter_names{i},'}^{[HG]}(s)/\sigma^2$'],'interpreter','latex')
+    ylabel(['Fisher Information  ','$I_{',parameter_names{i},'}^{[DI]}(s)/\sigma^2$'],'interpreter','latex')
     if i==3
         leg=legend(kappa_legend_names);
         leg.Location='NorthWest';
         title(leg,'$\kappa$','interpreter','latex')
-        ylabel(['Fisher Information  ','$I_{',parameter_names{i},'}^{[HG]}(s)$'],'interpreter','latex')
+        ylabel(['Fisher Information  ','$I_{',parameter_names{i},'}^{[DI]}(s)$'],'interpreter','latex')
         %set(gca,'yscale','log')
     end
     axis square
     box on
     title(['$',parameter_names{i},'$'],'interpreter','latex')
 end
-title(t1,{'Diagonal Fisher Information Matrix Elements','Direct Detection'},'interpreter','latex')
+title(t1,{'Diagonal Fisher Information Matrix Elements','Direct Imaging'},'interpreter','latex')
 
 % Plot the diagonal elements of the CRB matrix
 figure
@@ -172,18 +172,18 @@ for i = 1:3
     end
     hold off
     xlabel('$s/\sigma$','interpreter','latex')
-    ylabel(['Cramer-Rao Bound ','$\Sigma_{',parameter_names{i},'}^{[DD]}(s)\sigma^2$'],'interpreter','latex')
+    ylabel(['Cramer-Rao Bound ','$\Sigma_{',parameter_names{i},'}^{[DI]}(s)\sigma^2$'],'interpreter','latex')
     if i==3
         leg=legend(kappa_legend_names);
         title(leg,'$\kappa$','interpreter','latex')
-        ylabel(['Cramer-Rao Bound ','$\Sigma_{',parameter_names{i},'}^{[DD]}(s)$'],'interpreter','latex')
+        ylabel(['Cramer-Rao Bound ','$\Sigma_{',parameter_names{i},'}^{[DI]}(s)$'],'interpreter','latex')
     end
     set(gca,'yscale','log')
     axis square
     box on
     title(['$',parameter_names{i},'$'],'interpreter','latex')
 end
-title(t2,{'Diagonal Cramer-Rao Matrix Elements','Direct Detection'},'interpreter','latex')
+title(t2,{'Diagonal Cramer-Rao Matrix Elements','Direct Imaging'},'interpreter','latex')
 
 %{
 % Compare approximate (and analytic) CFIM to numerical CFIM 

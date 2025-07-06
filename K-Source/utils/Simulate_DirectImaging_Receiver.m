@@ -1,4 +1,4 @@
-function xyb_est = Simulate_DirectImaging_Receiver(xyb,M,N,sigma,visualization_flag)
+function [xyb_est,out_data] = Simulate_DirectImaging_Receiver(xyb,M,N,sigma,visualization_flag)
      
     % extract parameters
     num_sources = size(xyb,1);
@@ -15,7 +15,6 @@ function xyb_est = Simulate_DirectImaging_Receiver(xyb,M,N,sigma,visualization_f
 
     % estimate the source positions
     xy_est = DILocalizeSources(xy,xy_samples,sigma);
-
     
     %% SENSING STAGE
 
@@ -30,8 +29,10 @@ function xyb_est = Simulate_DirectImaging_Receiver(xyb,M,N,sigma,visualization_f
 
     % return the collection of estimates (sorted by brightness from dimmest to brightest)
     xyb_est = [xy_est, b_est];
-    [~,id] = sort(b_est,'ascend');
-    xyb_est = xyb_est(id,:);
+    %[~,id] = sort(b_est,'ascend');
+    %xyb_est = xyb_est(id,:);
+
+    out_data = [];
 
     %--------------------------------------------------%
     if visualization_flag

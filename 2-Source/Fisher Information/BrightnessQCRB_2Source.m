@@ -4,6 +4,8 @@ s = 10.^(linspace(-3,1,1000))/sigma;
 phi = exp(-1/2*(s/sigma).^2);
 g = (s.*phi/sigma).^2;
 kappa = (0:.1:.4)';
+tau= 4*kappa.^2;
+coeffvct = [tau.^2, zeros(size(tau)),-2*tau,-2*(1-tau),ones(size(tau))];
 
 N = 1;
 QCRB_kappa = (1/4)*(1-4*kappa.^2).*(g-1)...

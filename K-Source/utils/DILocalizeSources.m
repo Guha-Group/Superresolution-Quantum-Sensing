@@ -1,6 +1,6 @@
 function xy = DILocalizeSources(xy0,xy_samples,sigma)
-% Localize sources from direct imaging measurement. Uses expectaction
-% maximization under the assumption that the source brightnesses are equal.
+    % Localize sources from direct imaging measurement. Uses expectaction
+    % maximization under the assumption that the source brightnesses are equal.
     
     num_sources = size(xy0,1);              % K sources total
     xy = 2*sigma*(rand(num_sources,2)-.5);    % initial source positions
@@ -8,7 +8,7 @@ function xy = DILocalizeSources(xy0,xy_samples,sigma)
     % initialize expectation maximization parameters
     converged = 0;                               % convergence flag
     t = 1;                                       % iteration count
-    max_iters = 5e2;                             % maximum gradient iterations
+    max_iters = 1e2;                             % maximum gradient iterations
     
     xy_track = zeros(num_sources,2,max_iters+1);
     xy_track(:,:,t) = xy;
@@ -30,6 +30,8 @@ function xy = DILocalizeSources(xy0,xy_samples,sigma)
         converged = (t==max_iters) || all(vecnorm(xy_track(:,:,t)-xy_track(:,:,t-1),2,2) < sigma*1e-4);
 
     end
+
+    [xy,~] = SourceOrdering(xy,xy0);
 end
 
 function p = DirectImagingMeasurementProb(xy,xy0,sigma)

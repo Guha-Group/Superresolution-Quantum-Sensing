@@ -1,4 +1,4 @@
-function xyb_est = SimulateReceiver(xyb,M,N,receiver,varargin)
+function [xyb_est,out_data] = SimulateReceiver(xyb,M,N,receiver,varargin)
 % Description:
 % An interface for choosing which receiver to run.
 
@@ -29,12 +29,12 @@ addOptional(p,'visualize_flag',default_visualize_flag)
 switch receiver
     case 'DirectImaging'
         parse(p,xyb,M,N,receiver,varargin{:})
-        xyb_est = Simulate_DirectImaging_Receiver(xyb,M,N,p.Results.sigma,p.Results.visualize_flag);
+        [xyb_est,out_data] = Simulate_DirectImaging_Receiver(xyb,M,N,p.Results.sigma,p.Results.visualize_flag);
 
     case 'StaticSPADE'
         addRequired(p,'splitting_ratio',validateSplittingRatio)
         addRequired(p,'nm',validateHGIndices)
         parse(p,xyb,M,N,receiver,varargin{:})
-        xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,p.Results.sigma,p.Results.splitting_ratio,p.Results.nm,p.Results.visualize_flag);
+        [xyb_est,out_data] = Simulate_StaticSPADE_Receiver(xyb,M,N,p.Results.sigma,p.Results.splitting_ratio,p.Results.nm,p.Results.visualize_flag);
 end
 end

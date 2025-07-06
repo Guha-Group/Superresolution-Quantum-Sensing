@@ -1,4 +1,4 @@
-function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,nm,visualize_flag)
+function [xyb_est,out_data] = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,nm,visualize_flag)
     % Simulates a Multi-stage SPADE-enhanced receiver for performing
     % sub-diffraction color center sensing. 
     % DESCRIPTION: The receiver executes a
@@ -26,6 +26,7 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     %%%% OUTPUTS %%%%%%
     %%%%%%%%%%%%%%%%%%%
     % xyb_est           : [K,3] estimated scene parameter array
+    % out_data          : a structure containing output metadata
 
     
     % extract parameters
@@ -57,8 +58,7 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     nm_samples = HGSPADEMeasurement(xyb0,nm,M2,sigma,rot_angles);
 
     % estimate the source positions from the spade measurement
-    xy_est = HGLocalizeSources(xy,nm,nm_samples,sigma,rot_angles,visualize_flag);
-    
+    xy_est = HGLocalizeSources(xy,nm,nm_samples,sigma,rot_angles,visualize_flag);    
    
     %% SENSING STAGE
 
@@ -79,7 +79,7 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     xyb_est = [xy_est,b_pre_est];
     
     % formulate YKL measurement
-    [YKL_samples,YKL,Psi_est] = YKLMeasurement(xyb1,xyb_est,sigma,N2,visualize_flag);
+    [YKL_samples,YKL,Psi_est,YKL_GaussRepn] = YKLMeasurement(xyb1,xyb_est,sigma,N2,visualize_flag);
 
     % estimate the source brightnesses 
     b_est = EstimateBrightnessYKL(YKL_samples,YKL,Psi_est);
@@ -89,8 +89,12 @@ function xyb_est = Simulate_StaticSPADE_Receiver(xyb,M,N,sigma,splitting_ratio,n
     
     % return the collection of estimates (sorted by brightness from dimmest to brightest)
     xyb_est = [xy_est, b_est];
-    [~,id] = sort(b_est,'ascend');
-    xyb_est = xyb_est(id,:);
+    %[~,id] = sort(b_est,'ascend');
+    %xyb_est = xyb_est(id,:);
+    
+    % store any desired meta-data
+    out_data.YKL_GaussRepn = YKL_GaussRepn;
+
 
     %--------------------------------------------------%
     % visualize estimates

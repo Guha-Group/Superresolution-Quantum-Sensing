@@ -34,7 +34,7 @@ function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles,visualize_fl
     converged = 0;                               % convergence flag
     t = 1;                                       % iteration count
     %learning_rate = 1/sum(mode_counts(:));       % ascent rate
-    learning_rate = 1e-4;       % ascent rate (step size)
+    learning_rate = 5e-5;       % ascent rate (step size)
     max_iters = 5e4;                             % maximum gradient iterations
     
     % tracking objects
@@ -89,6 +89,12 @@ function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles,visualize_fl
         end
     end
 
+    % pick the estimate that had the highest likelihood if the gradient
+    % vector did not converge.
+    if (t == (max_iters+1)) || any(isnan(xy(:)))
+        [~,xy_id] = max(loglike_track);
+        xy = xy_track(:,:,xy_id+1);
+    end
     % break degeneracies in final estimate
     xy = BreakDegeneracies(xy,xy0);
         
@@ -132,31 +138,28 @@ function xy = HGLocalizeSources(xy0,nm,mode_counts,sigma,rot_angles,visualize_fl
 end
 
 
-function xy = BreakDegeneracies(xy,xy0)
+function xy_out = BreakDegeneracies(xy,xy0)
 
     % compute all inversion symmetries of the source coordinates
     xy_set = GenerateDegeneracies(xy);
-    
-    %{
-    % pick the one that has center of intensity closest to optical axis
-    centers = mean(xy_set,1);
-    d0 = vecnorm(centers,2,2);
-    xy_set = xy_set(:,:,d0==min(d0));
-    %}
 
-    % then pick the the constellation that is closest to the ground truth
-    label = perms(1:size(xy,1));
-    d1 = zeros(1,size(xy_set,3));
+    % for each degenerate constellation compute its distance to the ground
+    % truth - assuming the optimal source numbering (ordering) is made.
+    d = zeros(1,size(xy_set,3));
     for i = 1:size(xy_set,3)
-        temp = zeros(1,size(label,1));
-        for j = 1:size(label,1)
-            % compute the euclidean distance between the i'th constellation
-            % with labelling permutation label(j,:) and the ground truth.
-            temp(j) = sum(vecnorm(xy_set(label(j,:),:,i) - xy0,2,2),1);
-        end
-        d1(i) = min(temp);
+        % compute the best ordering for each degenerate solution
+        [xy_i,d_i] = SourceOrdering(xy_set(:,:,i),xy0);
+
+        % reassign the degenerate solution to its optimal source ordering
+        xy_set(:,:,i) = xy_i;
+        
+        % collect the distances between the estimate and the ground truth
+        d(i) = d_i;
     end
-    xy = xy_set(:,:,d1==min(d1));
+    xy_out = xy_set(:,:,d==min(d));
+    if size(xy_out,3)>1
+        xy_out = xy_out(:,:,1);
+    end
 end
 
 function xy_set = GenerateDegeneracies(xy)
@@ -195,4 +198,20 @@ function C = GenerateCombinations(v,k)
     
     % Convert grid output into a matrix where each row is a combination
     C = cell2mat(cellfun(@(x) x(:), grids, 'UniformOutput', false));
+end
+
+function [xy_out,d_out] = SourceOrdering(xy,xy0)
+% orders the permutation of the estimated sources such that they minimize
+% the cumulative pair-wise Euclidean distance with from the ground truth.
+
+% compute cumulative euclidean distance for all orderings
+ordering = perms(1:size(xy,1));
+d = zeros(size(ordering,1),1);
+for j = 1:size(ordering,1)
+    d(j) = sum(vecnorm(xy(ordering(j,:),:) - xy0,2,2),1);
+end
+
+% get the minimum distance ordering
+[d_out,j_out] = min(d); 
+xy_out = xy(ordering(j_out,:),:);
 end
