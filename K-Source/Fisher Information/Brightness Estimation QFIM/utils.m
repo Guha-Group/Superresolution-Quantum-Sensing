@@ -92,6 +92,8 @@ classdef utils
             problem.M = manifold;
             problem.cost = cost;
             options.verbosity = 0;
+            warning('off', 'manopt:getGradient:approx');
+            warning('off', 'manopt:getHessian:approx');
             
             % more magic solver
             [ykl, p_e, ~] = trustregions(problem,[],options);
@@ -140,5 +142,125 @@ classdef utils
                 end
             end
         end
+
+        function [Q,C] = tangent_brightness_QFIM(states,priors)
+            % returns the QFIM and the expected commutation relation of the
+            % SLDs
+
+            % number of states
+            K = size(states,1);
+
+            % tangent space matrix for the brightness perturbation space
+            V = eye(K) - ones(K,K)/K;
+
+            % density operator
+            P = diag(priors);
+            rho = states*P*states';
+
+            % make vector of states
+            rho_vec = permute(states,[1,3,2]).*permute(conj(states),[3,1,2]);
+
+            % get perturbation states
+            nu = permute(pagemtimes(V,permute(rho_vec,[3,1,2])),[2,3,1]);
+            
+            % get SLDs
+            L = zeros(K,K,K);
+            for k = 1:K
+                L(:,:,k) = lyap(rho,-2*nu(:,:,k));
+            end
+            
+            % define the inner product and anti-product operations
+            ip = @(A,B) trace(rho*(A*B + B*A))/2;
+            ap = @(A,B) trace(rho*(A*B - B*A))/2;
+
+            % get commutation matrix
+            C = zeros(K,K);
+            for i=1:K
+                for j=1:K
+                    C(i,j) = ap(L(:,:,i),L(:,:,j));
+                end
+            end
+
+            % get QFIM
+            Q = zeros(K,K);
+            for i = 1:K
+                for j = 1:K
+                    Q(i,j) = ip(L(:,:,i),L(:,:,j));
+                end
+            end
+
+        end
+        
+
+        function [cfim_numeric,cfim_analytic] = pgm_cfim(states,priors)
+           
+            % number of states
+            K = size(states,1);
+
+            % tangent space matrix for the brightness perturbation space
+            V = eye(K) - ones(K,K)/K;
+            
+            % get ground truh tangent params
+            theta_0 = pinv(V)*(priors-1/K);
+
+            % make vector of states
+            rho_vec = permute(states,[1,3,2]).*permute(conj(states),[3,1,2]);
+            
+            % compute the pgm
+            rho = @(theta) mean(rho_vec,3) + sum(permute(V*theta,[3,2,1]).*rho_vec,3);
+            rho_insq = @(theta) inv(sqrtm(rho(theta)));
+            pgm = @(theta) pagemtimes(rho_insq(theta),...
+                  pagemtimes(...
+                  permute(1/K + V*theta,[3,2,1]).*rho_vec,rho_insq(theta)));
+            
+
+            % reference density operator (for debugging)
+            rho_ref = sum(permute(priors,[3,2,1]).*rho_vec,3);
+            rho_0  = rho(theta_0);
+
+
+            % compute measurement probabilities
+            p = @(theta) sum(pagemtimes(rho(theta),pgm(theta)).*eye(K),[1,2]);
+            
+            % calculate the CFIM via numerical differentiation
+            cfim_numeric = zeros(K);
+            I = eye(K);
+            eps = 1e-10;
+            p0 = p(theta_0); % base probability
+            for i = 1:K
+                for j = 1:K
+                    dtheta_i = eps*I(:,i);
+                    dtheta_j = eps*I(:,j);
+                    dp_i = (p(theta_0 + dtheta_i) - p0)/eps;
+                    dp_j = (p(theta_0 + dtheta_j) - p0)/eps;
+                    cfim_numeric(i,j) = sum(dp_i.*dp_j./p0,3);
+                end
+            end
+
+            % get analytic cfim
+            cfim_analytic = V*diag(1./priors)*V.';
+
+        end
+
+        function xy_t = bezier(xy_c,num_pts)
+            % returns num_pts coords along a bezier curve defined by the control
+            % points xy_c. A beautiful recursive definition.
+            
+            t = linspace(0,1,num_pts);
+            xy_t = zeros([num_pts,size(xy_c,[2,3])]);
+            for n = 1:num_pts
+                xy_t(n,:) = bezier_point(xy_c,t(n));
+            end
+            
+            function xy_t = bezier_point(xy, t)
+                if size(xy,1) == 1
+                    xy_t = xy;
+                else 
+                    xy_t = (1-t)*bezier_point(xy(1:end-1,:),t)+t*(bezier_point(xy(2:end,:),t));
+                end
+            end
+        end
+
+
     end
 end

@@ -132,7 +132,7 @@ function YKL = getYKL(Psi,priors)
     % setup manifold optimization
     problem.M = unitaryfactory(num_states,1);                       % manifold is the space of unitaries (orthnormal projectors)
     problem.cost = @(x) 1 - abs(sum(conj(x).*Psi,1)).^2 * priors;   % cost is the probability of error
-    problem.egrad = @(x) - (sum(conj(Psi).*x,1).*priors.').*Psi;  % DO NOT FUCK WITH THIS -- TOOK YOU FOREVER TO DERIVE THE RIGHT EUCLIDEAN GRAD
+    problem.egrad = @(x) - (sum(conj(Psi).*x,1).*priors.').*Psi;
     
     % solve the optimal measurement
     options.verbosity = 0;

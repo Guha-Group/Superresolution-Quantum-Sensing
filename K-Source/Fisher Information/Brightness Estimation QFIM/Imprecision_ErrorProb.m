@@ -2,6 +2,20 @@
 num_sources = 3;
 num_constellations = 5;
 
+% Generate Bezier curves for all emitter trajectories
+num_bezier_pts = 15;
+bezier_ctrl_xy = rand(num_bezier_pts,2,num_sources)-.5;
+xy_c = utils.bezier(bezier_ctrl_xy,100);
+xy_c = xy_c-mean(xy_c,1);
+xy_c = xy_c ./ max(abs(xy_c),[],[1,2]);
+figure
+hold on
+for k = 1:num_sources
+    plot(xy_c(:,1,k),xy_c(:,2,k))
+end
+
+
+
 % make the constellations
 r = ones(num_sources,1);
 th = pi/2 + 2*pi/3 * (0:(num_sources-1))';
@@ -75,7 +89,7 @@ h = H;
 p = P;
 
 % reference circle for Rayleigh limit
-[xr,yr]=pol2cart(linspace(0,2*pi,100),ones(1,100));
+[xr,yr] = pol2cart(linspace(0,2*pi,100),ones(1,100));
 
 figure
 N = num_constellations-1;
