@@ -1,6 +1,7 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16899262.svg)](https://doi.org/10.5281/zenodo.16899262)
 # Superresolution Quantum Sensing
 __Author__: Nico Deshler
-https://doi.org/10.5281/zenodo.16899262
+
 
 ## Introduction
 This repository contains a simulation pipeline for modelling a multi-stage receiver capable of performing sub-diffraction sensing of vacancy color centers. The receivers employ frequentist and bayesian estimation tools to return an estimate of the immediate brightness of an ensemble of color centers whose separations are below the diffraction limit of an imaging microscope.
